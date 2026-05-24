@@ -30,7 +30,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# 3. INTERACTIVE SIDEBAR CONFIGURATION (ORIGINAL FORMAT)
+# 3. INTERACTIVE SIDEBAR CONFIGURATION
 # ==========================================
 with st.sidebar:
     st.markdown("### 🛠️ Core Engine Parameters")
@@ -102,19 +102,29 @@ def run_hr_discovery(domain):
     }
     return heuristics.get(domain, f"hr.hiring@{domain}")
 
-def create_outreach_script(job_title, company):
-    prompt = f"Write a professional under 100-word application message for a {job_title} role at {company}."
+def create_outreach_script(job_title, company, requirements):
+    # Expanded prompt to guarantee a beautiful, formal multi-paragraph layout from Gemini
+    prompt = f"""
+    Write a formal corporate cold outreach email from a final-year B.Tech CSE student to the HR team.
+    Target Position: {job_title} at {company}
+    Job Requirements to reference: {requirements}
+    
+    Structure it perfectly with a clear Subject line, formal salutations, two distinct body paragraphs highlighting Java/Python foundations, and a professional closing signature. Do not include placeholders or dates. Keep it under 150 words.
+    """
     try:
         response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
-        return response.text
+        generated_text = response.text.strip()
+        if len(generated_text) > 50:
+            return generated_text
     except Exception:
-        return f"Dear Hiring Team,\n\nI am highly interested in the open {job_title} role at {company}."
+        pass
+    
+    # Elegant multi-line formal fallback if API fails completely
+    return f"Subject: Application for {job_title} - Portfolio Submission\n\nDear HR Team,\n\nI am reaching out to express my keen interest in the {job_title} position at {company}. As a final-year Computer Science student, I have developed strong foundations in engineering clean software layers, relational database designs, and automated pipeline scripts.\n\nGiven the requirements for {requirements}, I am confident my technical skillset lines up perfectly with your execution standards. Thank you for your time.\n\nSincerely,\n[Candidate Name]"
 
 # ==========================================
 # 6. MAIN PANEL UI DEPLOYMENT
 # ==========================================
-
-# Dark Top Branding Banner Card
 with st.container(border=True):
     st.markdown("## ⚡ Real-Time AI Job & HR Tracker")
     st.markdown("##### Enterprise Data Pipeline & Generative AI Recruitment Outreach Sync Matrix")
@@ -122,7 +132,6 @@ with st.container(border=True):
 
 st.write("")
 
-# Metrics Performance Bar
 m_col1, m_col2, m_col3 = st.columns(3)
 with m_col1:
     st.metric(label="Total Jobs Captured", value="6")
@@ -134,10 +143,8 @@ with m_col3:
 st.write("")
 st.markdown("### 🎯 Real-Time Tracked Feed & HR Cold Outreach Maps")
 
-# Ingested Feeds Processing Loop
 jobs = get_pipeline_opportunities()
 for job in jobs:
-    # Match filters loosely to keep records active and prevent accidental empty screens
     if target_role.lower() not in job['title'].lower() and target_role.lower() not in job['requirements'].lower() and "java" not in target_role.lower():
         continue
         
@@ -160,13 +167,31 @@ for job in jobs:
         with st.expander("✉️ Deploy HR Sync Outreach Matrix"):
             if st.button("Generate Cold Email Draft", key=f"gen_{job['id']}"):
                 with st.spinner("Syncing matrix..."):
-                    email_text = create_outreach_script(job["title"], job["company"])
-                    st.text_area("Live Generated Blueprint:", value=email_text, height=180)
+                    email_text = create_outreach_script(job["title"], job["company"], job["requirements"])
+                    st.text_area("Live Generated Blueprint:", value=email_text, height=220, key=f"txt_{job['id']}")
                     
-                    sub_enc = urllib.parse.quote(f"Application - {job['title']}")
-                    body_enc = urllib.parse.quote(email_text)
-                    st.link_button("🚀 Launch Mail Engine", f"mailto:{hr_route}?subject={sub_enc}&body={body_enc}")
+                    # Clean separation of Subject and Body for the mailto protocol mapping
+                    if "Subject:" in email_text:
+                        parts = email_text.split("\n\n", 1)
+                        subject_line = parts[0].replace("Subject:", "").strip()
+                        body_lines = parts[1] if len(parts) > 1 else email_text
+                    else:
+                        subject_line = f"Application for {job['title']}"
+                        body_lines = email_text
+                    
+                    sub_enc = urllib.parse.quote(subject_line)
+                    body_enc = urllib.parse.quote(body_lines)
+                    mailto_url = f"mailto:{hr_route}?subject={sub_enc}&body={body_enc}"
+                    
+                    # Native HTML button solution to prevent browser opening empty blank pages
+                    html_button = f"""
+                        <a href="{mailto_url}" target="_self" style="text-decoration:none;">
+                            <button style="background-color:#1E3A8A; color:white; padding:10px 20px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; width:100%;">
+                                🚀 Launch Mail Engine
+                            </button>
+                        </a>
+                    """
+                    st.components.v1.html(html_button, height=50)
 
-# Footer Stats Line
 st.divider()
 st.caption("⚡ System Operating Matrix Status: Active Cloud Deployment Core")
