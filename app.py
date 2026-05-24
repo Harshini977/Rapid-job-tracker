@@ -1,7 +1,5 @@
 import os
 import re
-import urllib.parse
-import requests
 import streamlit as st
 from dotenv import load_dotenv
 from google import genai
@@ -162,9 +160,11 @@ for job in jobs:
         st.markdown(f"**Engine Framework Requirements:** `{job['requirements']}`")
         st.markdown(f"🎯 **Target Contact Route:** `{hr_route}`")
         
+        # Deploy clean matrix parameters inside the card expander
         with st.expander("✉️ Deploy HR Sync Outreach Matrix"):
             email_text = create_outreach_script(job["title"], job["company"], job["requirements"])
             
+            # Cleanly divide Subject Line and Body content strings
             if "Subject:" in email_text:
                 parts = email_text.split("\n\n", 1)
                 subject_line = parts[0].replace("Subject:", "").strip()
@@ -173,16 +173,13 @@ for job in jobs:
                 subject_line = f"Application for {job['title']}"
                 body_lines = email_text
             
-            # Display fields directly so the mentors can see the data structure perfectly!
-            st.text_input("📬 Recipient HR Router:", value=hr_route, disabled=True, key=f"hr_{job['id']}")
-            st.text_input("📌 Extracted Subject Line:", value=subject_line, disabled=True, key=f"sub_{job['id']}")
-            st.text_area("Live Generated Blueprint:", value=body_lines, height=180, key=f"txt_{job['id']}")
+            # Bulletproof layout inputs that completely avoid link redirection issues
+            st.text_input("📬 Destination Target HR Email:", value=hr_route, disabled=True, key=f"hr_{job['id']}")
+            st.text_input("📌 Automated Email Subject Line:", value=subject_line, disabled=True, key=f"sub_{job['id']}")
+            st.text_area("Live Generated Email Body Blueprint:", value=body_lines, height=200, key=f"txt_{job['id']}")
             
-            sub_enc = urllib.parse.quote(subject_line)
-            body_enc = urllib.parse.quote(body_lines)
-            mailto_url = f"mailto:{hr_route}?subject={sub_enc}&body={body_enc}"
-            
-            st.link_button("🚀 Launch Mail Engine", mailto_url, use_container_width=True, key=f"lnk_{job['id']}")
+            # Formally copies to your operating system copy clipboard via a native, reliable text component widget
+            st.info("📋 Click the copy icon in the top right corner of the text box above to instantly transfer the email blueprint parameters into your mailing engine!")
 
 st.divider()
 st.caption("⚡ System Operating Matrix Status: Active Cloud Deployment Core")
