@@ -163,24 +163,26 @@ for job in jobs:
         st.markdown(f"🎯 **Target Contact Route:** `{hr_route}`")
         
         with st.expander("✉️ Deploy HR Sync Outreach Matrix"):
-            if st.button("Generate Cold Email Draft", key=f"gen_{job['id']}"):
-                with st.spinner("Syncing matrix..."):
-                    email_text = create_outreach_script(job["title"], job["company"], job["requirements"])
-                    st.text_area("Live Generated Blueprint:", value=email_text, height=220, key=f"txt_{job['id']}")
-                    
-                    if "Subject:" in email_text:
-                        parts = email_text.split("\n\n", 1)
-                        subject_line = parts[0].replace("Subject:", "").strip()
-                        body_lines = parts[1] if len(parts) > 1 else email_text
-                    else:
-                        subject_line = f"Application for {job['title']}"
-                        body_lines = email_text
-                    
-                    sub_enc = urllib.parse.quote(subject_line)
-                    body_enc = urllib.parse.quote(body_lines)
-                    mailto_url = f"mailto:{hr_route}?subject={sub_enc}&body={body_enc}"
-                    
-                    st.link_button("🚀 Launch Mail Engine", mailto_url, use_container_width=True)
+            email_text = create_outreach_script(job["title"], job["company"], job["requirements"])
+            
+            if "Subject:" in email_text:
+                parts = email_text.split("\n\n", 1)
+                subject_line = parts[0].replace("Subject:", "").strip()
+                body_lines = parts[1] if len(parts) > 1 else email_text
+            else:
+                subject_line = f"Application for {job['title']}"
+                body_lines = email_text
+            
+            # Display fields directly so the mentors can see the data structure perfectly!
+            st.text_input("📬 Recipient HR Router:", value=hr_route, disabled=True, key=f"hr_{job['id']}")
+            st.text_input("📌 Extracted Subject Line:", value=subject_line, disabled=True, key=f"sub_{job['id']}")
+            st.text_area("Live Generated Blueprint:", value=body_lines, height=180, key=f"txt_{job['id']}")
+            
+            sub_enc = urllib.parse.quote(subject_line)
+            body_enc = urllib.parse.quote(body_lines)
+            mailto_url = f"mailto:{hr_route}?subject={sub_enc}&body={body_enc}"
+            
+            st.link_button("🚀 Launch Mail Engine", mailto_url, use_container_width=True, key=f"lnk_{job['id']}")
 
 st.divider()
 st.caption("⚡ System Operating Matrix Status: Active Cloud Deployment Core")
