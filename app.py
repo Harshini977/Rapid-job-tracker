@@ -54,8 +54,9 @@ def fetch_real_live_jobs(role, location):
     """
     Connects to a live web job board data aggregator to stream real-time vacancies.
     """
-    clean_role = urllib.parse.quote(role)
-    clean_loc = urllib.parse.quote(location)
+    # Clean up spaces and convert to proper URL format
+    clean_role = urllib.parse.quote(role.strip())
+    clean_loc = urllib.parse.quote(location.strip())
     
     # Live production request URL streaming actual current jobs from the web
     api_url = f"https://api.adzuna.com/v1/api/jobs/in/search/1?app_id=c08a901e&app_key=2df78508cf311a2f64c06316ef5a6d59&what={clean_role}&where={clean_loc}&content-type=application/json"
@@ -68,17 +69,21 @@ def fetch_real_live_jobs(role, location):
             results = data.get('results', [])
             
             for idx, job in enumerate(results[:5]):  # Process top 5 live available vacancies
-                company_name = job.get('company', {}).get('display_name', 'Tech Corporation')
+                company_obj = job.get('company', {})
+                company_name = company_obj.get('display_name') if isinstance(company_obj, dict) else company_obj
+                if not company_name:
+                    company_name = "Tech Enterprise"
+                
                 # Build an authentic corporate domain for the HR email router
-                clean_domain = company_name.lower().replace(" ", "").replace(",", "").replace(".", "") + ".com"
+                clean_domain = str(company_name).lower().replace(" ", "").replace(",", "").replace(".", "") + ".com"
                 
                 real_jobs.append({
                     "id": f"REAL-JOB-{idx:03d}",
-                    "title": job.get('title', f"{role}"),
+                    "title": job.get('title', role),
                     "company": company_name,
                     "domain": clean_domain,
-                    "location": job.get('location', {}).get('display_name', location),
-                    "requirements": job.get('description', 'Key responsibilities match criteria.'),
+                    "location": job.get('location', {}).get('display_name', location) if isinstance(job.get('location'), dict) else location,
+                    "requirements": job.get('description', 'Key responsibilities match standard criteria.'),
                 })
     except Exception:
         pass
