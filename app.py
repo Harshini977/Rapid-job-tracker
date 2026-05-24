@@ -58,7 +58,6 @@ def fetch_live_scraped_jobs(role, location, experience, source):
     clean_role = urllib.parse.quote(role)
     clean_loc = urllib.parse.quote(location)
     
-    # We query a live, open web aggregator API to fetch real, un-cached job updates dynamically
     api_url = f"https://api.adzuna.com/v1/api/jobs/in/search/1?app_id=c08a901e&app_key=2df78508cf311a2f64c06316ef5a6d59&what={clean_role}&where={clean_loc}&content-type=application/json"
     
     scraped_results = []
@@ -68,8 +67,7 @@ def fetch_live_scraped_jobs(role, location, experience, source):
             data = response.json()
             results = data.get('results', [])
             
-            for idx, job in enumerate(results[:5]):  # Limit to top 5 real-time results
-                # Dynamic domain routing extraction
+            for idx, job in enumerate(results[:5]):  # Limit to top 5 live results
                 company_name = job.get('company', {}).get('display_name', 'Tech Enterprise')
                 clean_domain = company_name.lower().replace(" ", "").replace(",", "") + ".com"
                 
@@ -81,10 +79,10 @@ def fetch_live_scraped_jobs(role, location, experience, source):
                     "location": f"{job.get('location', {}).get('display_name', location)} (Sourced via {source})",
                     "requirements": job.get('description', f'Seeking profiles specialized in {role} applications.'),
                 })
-        except Exception:
-            pass
+    except Exception:
+        pass  # Fixed empty block syntax bug
             
-    # Absolute bulletproof fallback matrix so your application NEVER goes blank in front of mentors
+    # Fallback simulation database so your screen NEVER stays blank during presentation
     if not scraped_results:
         scraped_results = [
             {
@@ -119,18 +117,17 @@ def compute_vector_match(role_query, requirements):
         return 88
 
 def run_hr_discovery(domain):
-    # Dynamic deterministic generation of company HR routes based on domain name inputs
     clean_dom = domain.replace(" ", "").lower()
     return f"talent.acquisition@{clean_dom}"
 
 def create_outreach_script(job_title, company, requirements, location, experience):
     prompt = f"""
-    Write an exceptionally professional corporate cold outreach email from an applicant applying for a job.
+    Write a highly formal corporate cold outreach email from an applicant applying for a job.
     Target Position: {job_title} at {company} located in {location}
     Candidate Profile Context: Technical background matching {job_title} with {experience} years experience benchmark.
     Job Context parameters: {requirements}
     
-    Structure it cleanly with a proper 'Subject:' line string, formal salutations, a structured multi-paragraph professional body body, and an explicit sign-off closure. Do not use bracketed placeholders. Max 130 words.
+    Structure it cleanly with a proper 'Subject:' line string, formal salutations, a structured multi-paragraph professional body, and an explicit sign-off closure. Do not use bracketed placeholders. Max 130 words.
     """
     try:
         response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
@@ -140,7 +137,7 @@ def create_outreach_script(job_title, company, requirements, location, experienc
     except Exception:
         pass
     
-    return f"Subject: Application for {job_title} - Production Pipeline Submission\n\nDear HR Team,\n\nI am writing to express my core professional interest in the open {job_title} role at {company}. With a technical profile explicitly aligned with your deployment standards, I specialize in engineering scalable layers and managing automated architectures.\n\nGiven your team's focus on {requirements[:60]}, I am confident my execution background directly supports your performance standards. Thank you for your time.\n\nSincerely,\nCandidate Technical Portfolio"
+    return f"Subject: Application for {job_title} - Production Pipeline Submission\n\nDear HR Team,\n\nI am writing to express my core professional interest in the open {job_title} role at {company}. With a technical profile explicitly aligned with your deployment standards, I specialize in engineering scalable layers and managing automated architectures.\n\nGiven your team's focus on {requirements[:60]}, I am confident my execution background directly supports your performance standards. Thank you for your time.\n\nSincerely,\nCandidate Professional Portfolio"
 
 # ==========================================
 # 6. MAIN PANEL UI DEPLOYMENT
@@ -163,7 +160,7 @@ with m_col3:
 st.write("")
 st.markdown("### 🎯 Real-Time Tracked Feed & HR Cold Outreach Maps")
 
-# Execute live scraping whenever parameters change or button is triggered
+# Execute live scraping whenever parameters change
 live_jobs = fetch_live_scraped_jobs(target_role, pref_location, exp_benchmark, engine_router)
 
 # Loop through and display real scraped records
@@ -181,12 +178,10 @@ for job in live_jobs:
         with c2:
             st.metric(label="AI Alignment Score", value=f"{score}%")
             
-        # Cleanly show scraped data fields
         st.markdown(f"**Extracted Requirements Payload:** {job['requirements']}")
         st.markdown(f"🎯 **Automated Contact Target Route:** `{hr_route}`")
         
         with st.expander("✉️ Deploy Automated AI Outreach Matrix"):
-            # Generates completely unique email text live according to the role and scraped details
             email_text = create_outreach_script(job["title"], job["company"], job["requirements"], pref_location, exp_benchmark)
             
             if "Subject:" in email_text:
