@@ -1,42 +1,57 @@
-import streamlit as st
 import os
+import requests
+import time
 import random
+import streamlit as st
 import google.generativeai as genai
+from dotenv import load_dotenv
+import urllib.parse
+from job_engine import JobRecommenderEngine
 
-# 1. SETUP
-st.set_page_config(page_title="Job Tracker", layout="wide")
+# Configure the Gemini API Key
+load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY") or st.secrets.get("GEMINI_API_KEY")
-
-if not api_key:
-    st.error("Add GEMINI_API_KEY to Streamlit Secrets!")
+if api_key:
+    genai.configure(api_key=api_key)
+else:
+    st.error("🔑 API Key not found!")
     st.stop()
 
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel("gemini-1.5-flash")
+# Load UI and Engine
+st.set_page_config(page_title="Real-Time AI Job Pipeline", layout="wide")
+engine = JobRecommenderEngine()
 
-# 2. LOGIC
-def fetch_mock_jobs(keyword, location):
-    companies = ["Google", "Microsoft", "Amazon", "Wipro", "TCS", "Infosys"]
-    return [{
-        "job_id": f"J-{i}",
-        "title": f"{random.choice(['Senior', 'Associate'])} {keyword}",
-        "company": random.choice(companies),
-        "location": location
-    } for i in range(6)]
+# --- CSS STYLING ---
+st.markdown("""
+    <style>
+    .job-card { background: white; padding: 24px; border-radius: 12px; border: 1px solid #E2E8F0; margin-bottom: 20px; }
+    .hero-banner { background: #1E293B; padding: 30px; border-radius: 16px; color: white; margin-bottom: 25px; }
+    </style>
+""", unsafe_allow_html=True)
 
-# 3. UI
-st.title("⚡ Real-Time AI Job Tracker")
-keyword = st.sidebar.text_input("Target Profile", "Java Developer")
-location = st.sidebar.text_input("Location", "Hyderabad")
+st.markdown('<div class="hero-banner"><h1>⚡ Real-Time AI Job & HR Tracker</h1></div>', unsafe_allow_html=True)
 
-if st.sidebar.button("Execute Pipeline"):
-    jobs = fetch_mock_jobs(keyword, location)
-    st.metric("Total Jobs Captured", len(jobs))
+# --- SIDEBAR ---
+with st.sidebar:
+    keyword = st.text_input("Target Job Profile", "Java Developer")
+    location = st.text_input("Location", "Hyderabad")
+    experience = st.number_input("Experience (Years)", value=2)
+    selected_platform = st.selectbox("Engine", ["Naukri Engine API", "LinkedIn Scraper Index"])
+    launch_pipeline = st.button("🚀 Execute Stream Pipeline", type="primary")
+
+# --- MAIN LOGIC ---
+if launch_pipeline:
+    raw_listings = engine.fetch_jobs(keyword, location, experience)
+    processed = engine.score_jobs_with_ai(raw_listings, "Engineering student")
     
-    for job in jobs:
-        with st.container(border=True):
-            st.subheader(f"{job['title']} at {job['company']}")
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Total Jobs Captured", len(processed))
+    m2.metric("Peak Compatibility", f"{processed[0]['match_score']}%")
+    
+    for job in processed:
+        with st.container():
+            st.markdown(f'<div class="job-card"><h3>💼 {job["title"]} - {job["company"]}</h3>', unsafe_allow_html=True)
+            st.write(f"**Location:** {job['location']}")
             if st.button(f"Draft Email for {job['job_id']}", key=job['job_id']):
-                prompt = f"Write a professional email for a {job['title']} role at {job['company']}."
-                response = model.generate_content(prompt)
-                st.write(response.text)
+                st.write(engine.generate_ai_email(job, "Recruiter"))
+            st.markdown('</div>', unsafe_allow_html=True)
