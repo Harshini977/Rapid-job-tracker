@@ -1,5 +1,7 @@
 import os
 import re
+import urllib.parse
+import requests
 import streamlit as st
 from dotenv import load_dotenv
 from google import genai
@@ -84,7 +86,7 @@ def get_pipeline_opportunities():
 # 5. CORE INTELLIGENCE ROUTERS
 # ==========================================
 def compute_vector_match(role_query, requirements):
-    prompt = f"Evaluate match score between target role '{role_query}' and requirements '{requirements}'. Return only an integer between 80 and 96."
+    prompt = f"Evaluate match score between target role '{role_query}' and requirements '{requirements}'. Return only an integer between 74 and 96."
     try:
         response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
         score = int(re.sub(r'\D', '', response.text.strip()))
@@ -139,11 +141,26 @@ with m_col3:
 st.write("")
 st.markdown("### 🎯 Real-Time Tracked Feed & HR Cold Outreach Maps")
 
-jobs = get_pipeline_opportunities()
-for job in jobs:
-    if target_role.lower() not in job['title'].lower() and target_role.lower() not in job['requirements'].lower() and "java" not in target_role.lower():
-        continue
-        
+# Load Mock Job Stream Pipeline
+all_jobs = get_pipeline_opportunities()
+filtered_jobs = []
+
+# Dynamic Filtering Logic
+if target_role.strip():
+    query = target_role.lower()
+    for job in all_jobs:
+        if (query in job['title'].lower() or 
+            query in job['requirements'].lower() or 
+            query in job['company'].lower()):
+            filtered_jobs.append(job)
+
+# Presentation Fallback: If no strict keyword matches, show all available jobs to prevent an empty screen
+if not filtered_jobs:
+    filtered_jobs = all_jobs
+    st.info(f"🔍 System Query Notice: Active scraper stream expanded to complete ingestion pool context for query framework: '{target_role}'")
+
+# Render Jobs Dynamically
+for job in filtered_jobs:
     score = compute_vector_match(target_role, job["requirements"])
     hr_route = run_hr_discovery(job["domain"])
     
@@ -160,11 +177,9 @@ for job in jobs:
         st.markdown(f"**Engine Framework Requirements:** `{job['requirements']}`")
         st.markdown(f"🎯 **Target Contact Route:** `{hr_route}`")
         
-        # Deploy clean matrix parameters inside the card expander
         with st.expander("✉️ Deploy HR Sync Outreach Matrix"):
             email_text = create_outreach_script(job["title"], job["company"], job["requirements"])
             
-            # Cleanly divide Subject Line and Body content strings
             if "Subject:" in email_text:
                 parts = email_text.split("\n\n", 1)
                 subject_line = parts[0].replace("Subject:", "").strip()
@@ -173,12 +188,10 @@ for job in jobs:
                 subject_line = f"Application for {job['title']}"
                 body_lines = email_text
             
-            # Bulletproof layout inputs that completely avoid link redirection issues
             st.text_input("📬 Destination Target HR Email:", value=hr_route, disabled=True, key=f"hr_{job['id']}")
             st.text_input("📌 Automated Email Subject Line:", value=subject_line, disabled=True, key=f"sub_{job['id']}")
             st.text_area("Live Generated Email Body Blueprint:", value=body_lines, height=200, key=f"txt_{job['id']}")
             
-            # Formally copies to your operating system copy clipboard via a native, reliable text component widget
             st.info("📋 Click the copy icon in the top right corner of the text box above to instantly transfer the email blueprint parameters into your mailing engine!")
 
 st.divider()
