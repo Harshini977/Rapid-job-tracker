@@ -25,7 +25,7 @@ if not GEMINI_API_KEY:
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 # ==========================================
-# 2. APP CONFIGURATION & UI STYLING
+# 2. APP CONFIGURATION & NATIVE UI STYLING
 # ==========================================
 st.set_page_config(
     page_title="⚡ Real-Time AI Job & HR Tracker",
@@ -33,27 +33,10 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom enterprise style sheets
-# Custom enterprise style sheets
-style_css = """
-    <style>
-    .main-header { font-size: 2.3rem; font-weight: 800; color: #1E3A8A; margin-bottom: 5px; }
-    .sub-header { font-size: 1.1rem; color: #4B5563; margin-bottom: 25px; }
-    .metric-card { background-color: #F3F4F6; padding: 15px; border-radius: 8px; border-left: 5px solid #3B82F6; }
-    .job-box { border: 1px solid #E5E7EB; padding: 20px; border-radius: 8px; margin-bottom: 15px; background: #FFFFFF; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-    .badge-hunter { background-color: #059669; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
-    .badge-gemini { background-color: #D97706; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
-    .match-high { color: #059669; font-weight: bold; }
-    .match-med { color: #D97706; font-weight: bold; }
-    </style>
-"""
-
-# Pass variables directly to bypass Python 3.14 structural strictness
-st.markdown(style_css, unsafe_allowed_with_html=True)
-
-
-st.markdown('<div class="main-header">⚡ Real-Time AI Job & HR Tracker</div>', unsafe_allowed_with_html=True)
-st.markdown('<div class="sub-header">Automated Multi-Source Job Scraper, Vector Alignment Matcher, and Cold Outreach Matrix</div>', unsafe_allowed_with_html=True)
+# Native titles and subheaders to bypass Python 3.14 strict rendering bottlenecks
+st.title("⚡ Real-Time AI Job & HR Tracker")
+st.subheader("Automated Multi-Source Job Scraper, Vector Alignment Matcher, and Cold Outreach Matrix")
+st.divider()
 
 # ==========================================
 # 3. BACKEND SIMULATED DATA INGESTION
@@ -122,7 +105,6 @@ def discover_hr_email(domain):
     Fault-Tolerant Router: Attempts live Hunter.io verification, 
     smoothly falls back to Gemini Heuristic layer on expected 401/429 limits.
     """
-    # Attempting integration pattern
     url = f"https://api.hunter.io/v2/domain-search?domain={domain}&api_key={HUNTER_API_KEY}"
     try:
         res = requests.get(url, timeout=4)
@@ -133,9 +115,9 @@ def discover_hr_email(domain):
                 email = pattern.replace("{first}", "hr").replace("{last}", "").replace("..", ".") + f"@{domain}"
                 return email, "Hunter.io Production Gateway"
     except Exception:
-        pass # Silently drop connection failures into alternative backup logic below
+        pass # Fall back seamlessly if API key is a demo or encounters network drops
         
-    # Backup Fallback Matrix
+    # Robust Static Fallback Layer
     heuristics = {
         "tcs.com": "talent.acquisition@tcs.com",
         "cognizant.com": "university.recruiting@cognizant.com",
@@ -159,8 +141,8 @@ def draft_cold_email(candidate_profile, job_title, company, context_reason):
             contents=prompt
         )
         return response.text
-    except Exception as e:
-        return f"Subject: Application for {job_title} role at {company}\n\nDear HR Team,\n\nI am reaching out regarding your open role for a {job_title}. With my strong technical background, I look forward to adding value to your active engineering workloads."
+    except Exception:
+        return f"Subject: Application for {job_title} role at {company}\n\nDear HR Team,\n\nI am reaching out regarding your open role for a {job_title}. Given my technical background, I look forward to contributing to your team."
 
 # ==========================================
 # 5. USER INTERFACE & FLOW LOGIC
@@ -168,44 +150,36 @@ def draft_cold_email(candidate_profile, job_title, company, context_reason):
 col1, col2 = st.columns([1, 2])
 
 with col1:
-    st.subheader("📋 Candidate Profile Settings")
+    st.markdown("### 📋 Candidate Profile Settings")
     profile_input = st.text_area(
         "Edit Your Technical Resume Data:",
         value="B.Tech Computer Science student specializing in Java, Python, and Machine Learning algorithms. Developed a production console-based Bug Tracker System integrating SQLite and JDBC secure authentication structures. Experienced with Streamlit frontends and Agentic AI framework architectures.",
-        height=180
+        height=200
     )
     
     st.info("💡 **API Routing Active:** System uses a fault-tolerant backup switch between Hunter.io registries and modern `gemini-2.5-flash` analytics models.")
 
 with col2:
-    st.subheader("📥 Ingested Market Opportunities")
+    st.markdown("### 📥 Ingested Market Opportunities")
     opportunities = get_simulated_opportunities()
     
-    # Process and render loop
+    # Process and render loop using native elements
     for job in opportunities:
         score, alignment_reason = analyze_alignment(profile_input, job["requirements"])
         email_route, data_source = discover_hr_email(job["domain"])
         
-        # Determine visual style criteria based on alignment score
-        score_class = "match-high" if score >= 80 else "match-med"
-        source_badge = "badge-hunter" if "Hunter" in data_source else "badge-gemini"
-        
-        with st.container():
-            st.markdown(f"""
-            <div class="job-box">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h4 style="margin:0; color:#1E3A8A;">{job['title']} — <b>{job['company']}</b></h4>
-                    <span class="{score_class}">Match Score: {score}%</span>
-                </div>
-                <p style="font-size:0.9rem; color:#6B7280; margin: 4px 0 12px 0;">📍 {job['location']}</p>
-                <p style="font-size:0.92rem; margin-bottom:8px;"><b>Core Requirements:</b> <code>{job['requirements']}</code></p>
-                <p style="font-size:0.92rem; color:#4B5563; line-height:1.4;"><i>{alignment_reason}</i></p>
-                <div style="margin-top:12px; display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:0.88rem;">🎯 Target Route: <b>{email_route}</b></span>
-                    <span class="{source_badge}">{data_source}</span>
-                </div>
-            </div>
-            """, unsafe_allowed_with_html=True)
+        # Native bordered container cards
+        with st.container(border=True):
+            subcol1, subcol2 = st.columns([3, 1])
+            with subcol1:
+                st.markdown(f"#### {job['title']}")
+                st.markdown(f"**{job['company']}** | 📍 {job['location']}")
+            with subcol2:
+                st.metric(label="Match Score", value=f"{score}%")
+            
+            st.markdown(f"**Core Requirements:** `{job['requirements']}`")
+            st.markdown(f"*{alignment_reason}*")
+            st.markdown(f"🎯 **Target Route:** `{email_route}` | Source: *{data_source}*")
             
             # Interactive outreach generation widget
             with st.expander(f"✉️ Generate Outreach Matrix for {job['company']}"):
@@ -214,15 +188,15 @@ with col2:
                         email_body = draft_cold_email(profile_input, job["title"], job["company"], alignment_reason)
                         st.text_area("Live Generated Copy:", value=email_body, height=220)
                         
-                        # Direct mailto mail link integration
+                        # Direct mailto link integration using standard link_button
                         subject_encoded = urllib.parse.quote(f"Application for {job['title']} - Portfolio Submission")
                         body_encoded = urllib.parse.quote(email_body)
                         mailto_url = f"mailto:{email_route}?subject={subject_encoded}&body={body_encoded}"
                         
-                        st.markdown(f'<a href="{mailto_url}" target="_blank" style="display:inline-block; background-color:#2563EB; color:white; padding:8px 16px; border-radius:5px; text-decoration:none; font-weight:bold; font-size:0.9rem;">🚀 Launch Mail Client</a>', unsafe_allowed_with_html=True)
+                        st.link_button("🚀 Launch Mail Client", mailto_url)
 
 # ==========================================
 # 6. APP FOOTER STATS
 # ==========================================
-st.write("---")
+st.divider()
 st.caption("⚡ Real-Time AI Job & HR Tracker Framework • Active Cloud Pipeline Status: Operational")
