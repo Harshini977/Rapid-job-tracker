@@ -103,24 +103,22 @@ def run_hr_discovery(domain):
     return heuristics.get(domain, f"hr.hiring@{domain}")
 
 def create_outreach_script(job_title, company, requirements):
-    # Expanded prompt to guarantee a beautiful, formal multi-paragraph layout from Gemini
     prompt = f"""
-    Write a formal corporate cold outreach email from a final-year B.Tech CSE student to the HR team.
+    Write a highly formal corporate cold outreach email from an applicant to the HR recruitment team.
     Target Position: {job_title} at {company}
-    Job Requirements to reference: {requirements}
+    Core Requirements to reference: {requirements}
     
-    Structure it perfectly with a clear Subject line, formal salutations, two distinct body paragraphs highlighting Java/Python foundations, and a professional closing signature. Do not include placeholders or dates. Keep it under 150 words.
+    The letter must be thorough, multi-paragraph, and professional. Include a proper Subject line header string, formal salutations, a strong body highlighting development foundations, and a professional closing signature structure. Do not use placeholders or bracketed terms. Keep it under 140 words total.
     """
     try:
         response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
         generated_text = response.text.strip()
-        if len(generated_text) > 50:
+        if len(generated_text) > 40:
             return generated_text
     except Exception:
         pass
     
-    # Elegant multi-line formal fallback if API fails completely
-    return f"Subject: Application for {job_title} - Portfolio Submission\n\nDear HR Team,\n\nI am reaching out to express my keen interest in the {job_title} position at {company}. As a final-year Computer Science student, I have developed strong foundations in engineering clean software layers, relational database designs, and automated pipeline scripts.\n\nGiven the requirements for {requirements}, I am confident my technical skillset lines up perfectly with your execution standards. Thank you for your time.\n\nSincerely,\n[Candidate Name]"
+    return f"Subject: Application for {job_title} - Portfolio Submission\n\nDear HR Team,\n\nI am writing to express my strong technical interest in the open {job_title} role at {company}. As a computer science graduate, I specialize in building maintainable software layers, managing structured queries, and optimizing custom pipeline execution schemas.\n\nGiven your team's current focus on {requirements}, I am confident my execution background directly supports your production standards. Thank you for your time.\n\nSincerely,\nCandidate Professional Portfolio"
 
 # ==========================================
 # 6. MAIN PANEL UI DEPLOYMENT
@@ -170,7 +168,6 @@ for job in jobs:
                     email_text = create_outreach_script(job["title"], job["company"], job["requirements"])
                     st.text_area("Live Generated Blueprint:", value=email_text, height=220, key=f"txt_{job['id']}")
                     
-                    # Clean separation of Subject and Body for the mailto protocol mapping
                     if "Subject:" in email_text:
                         parts = email_text.split("\n\n", 1)
                         subject_line = parts[0].replace("Subject:", "").strip()
@@ -183,15 +180,7 @@ for job in jobs:
                     body_enc = urllib.parse.quote(body_lines)
                     mailto_url = f"mailto:{hr_route}?subject={sub_enc}&body={body_enc}"
                     
-                    # Native HTML button solution to prevent browser opening empty blank pages
-                    html_button = f"""
-                        <a href="{mailto_url}" target="_self" style="text-decoration:none;">
-                            <button style="background-color:#1E3A8A; color:white; padding:10px 20px; border:none; border-radius:6px; font-weight:bold; cursor:pointer; width:100%;">
-                                🚀 Launch Mail Engine
-                            </button>
-                        </a>
-                    """
-                    st.components.v1.html(html_button, height=50)
+                    st.link_button("🚀 Launch Mail Engine", mailto_url, use_container_width=True)
 
 st.divider()
 st.caption("⚡ System Operating Matrix Status: Active Cloud Deployment Core")
