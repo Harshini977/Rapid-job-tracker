@@ -48,74 +48,48 @@ with st.sidebar:
 # ==========================================
 # 4. HIGH-PERFORMANCE DATA PIPELINE ROUTER
 # ==========================================
+# ==========================================
+# 4. FIXED: DYNAMIC ENGINE ROUTING LOGIC
+# ==========================================
 def get_ingested_records(role, location, source):
     """
-    Generates varied technical openings dynamically matching user search parameters.
-    Ensures zero runtime errors or network blocks during project verification.
+    Returns unique data pools based on the selected router engine.
+    This simulates how your original app handled different API sources.
     """
-    clean_role = role.strip()
-    clean_loc = location.strip()
+    # Naukri-style data profile
+    naukri_data = [
+        {"title": f"Senior {role}", "company": "TCS (Naukri Feed)", "domain": "tcs.com"},
+        {"title": f"Associate {role} Engineer", "company": "Capgemini (Naukri Feed)", "domain": "capgemini.com"},
+        {"title": f"Java {role} Lead", "company": "Tech Mahindra (Naukri Feed)", "domain": "techmahindra.com"},
+        {"title": f"System {role} Analyst", "company": "Infosys (Naukri Feed)", "domain": "infosys.com"},
+        {"title": f"{role} Developer", "company": "Wipro (Naukri Feed)", "domain": "wipro.com"},
+        {"title": f"Junior {role} Associate", "company": "Cognizant (Naukri Feed)", "domain": "cognizant.com"}
+    ]
     
-    # Pre-compiled high-fidelity tech matrices for common search queries
-    if "web" in clean_role.lower() or "front" in clean_role.lower():
-        return [
-            {
-                "id": "INGEST-941",
-                "title": "UI / Web Developer",
-                "company": "Cognizant India",
-                "domain": "cognizant.com",
-                "location": f"{clean_loc}, India (Hybrid)",
-                "requirements": "Proficiency in HTML5, CSS3, JavaScript (ES6+), and modern JS Frameworks such as React or Angular. Experience with responsive layouts, cross-browser optimization, and state management workflows."
-            },
-            {
-                "id": "INGEST-108",
-                "title": "Frontend Engineer",
-                "company": "Capgemini Engineering",
-                "domain": "capgemini.com",
-                "location": f"{clean_loc} Office",
-                "requirements": "Hands-on expertise with single page applications (SPAs), front-end build pipelines (Webpack, Vite), version tracking with Git, and translating Figma design blueprints into modular web layers."
-            }
-        ]
-    elif "python" in clean_role.lower() or "data" in clean_role.lower() or "machine" in clean_role.lower():
-        return [
-            {
-                "id": "INGEST-552",
-                "title": "Python Backend Developer",
-                "company": "Tech Mahindra",
-                "domain": "techmahindra.com",
-                "location": f"{clean_loc} Tech Park",
-                "requirements": "Strong experience with Python, Django or FastAPI frameworks, and database engines (PostgreSQL/MySQL). Building scalable web APIs and optimizing data query processing layers."
-            },
-            {
-                "id": "INGEST-203",
-                "title": "Associate Data Engineer",
-                "company": "TCS Research Labs",
-                "domain": "tcs.com",
-                "location": f"{clean_loc}, India",
-                "requirements": "Proficiency in Python scripting, pandas, data pipeline architectures, extraction pipelines, and SQL optimization. Familiarity with cloud storage layouts is highly preferred."
-            }
-        ]
-    else:
-        # Default specialized fallback structure (e.g. Java, Software Engineer)
-        return [
-            {
-                "id": "INGEST-771",
-                "title": f"Senior {clean_role}",
-                "company": "Tata Consultancy Services",
-                "domain": "tcs.com",
-                "location": f"{clean_loc} Campus",
-                "requirements": f"Advanced development expertise in enterprise software architectures, core execution stacks aligned with {clean_role} profiles, object-oriented design patterns, and unit testing environments."
-            },
-            {
-                "id": "INGEST-884",
-                "title": f"Associate {clean_role} Specialist",
-                "company": "LTI-Mindtree",
-                "domain": "ltimindtree.com",
-                "location": f"{clean_loc}, India",
-                "requirements": f"Solid functional foundations managing component software lifecycles, debugging operational workflows, configuring database connectivity streams, and executing technical specs for {clean_role} positions."
-            }
-        ]
+    # LinkedIn-style data profile
+    linkedin_data = [
+        {"title": f"Lead {role} (LinkedIn Proxy)", "company": "Amazon", "domain": "amazon.com"},
+        {"title": f"Principal {role} (LinkedIn Proxy)", "company": "Google", "domain": "google.com"},
+        {"title": f"Staff {role} (LinkedIn Proxy)", "company": "Microsoft", "domain": "microsoft.com"},
+        {"title": f"Senior {role} (LinkedIn Proxy)", "company": "Adobe", "domain": "adobe.com"},
+        {"title": f"Backend {role} (LinkedIn Proxy)", "company": "Oracle", "domain": "oracle.com"},
+        {"title": f"Fullstack {role} (LinkedIn Proxy)", "company": "Salesforce", "domain": "salesforce.com"}
+    ]
 
+    # Select the pool based on the router
+    selected_pool = naukri_data if "Naukri" in source else linkedin_data
+    
+    records = []
+    for job in selected_pool:
+        records.append({
+            "id": f"INGEST-{job['company'][:3].upper()}",
+            "title": job['title'],
+            "company": job['company'],
+            "domain": job['domain'],
+            "location": f"{location}, India",
+            "requirements": f"Expertise in {role} workflows, system design, and industry standard architecture."
+        })
+    return records
 # ==========================================
 # 5. CORE ARTIFICIAL INTELLIGENCE ENVIRONMENT
 # ==========================================
