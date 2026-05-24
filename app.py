@@ -34,7 +34,8 @@ st.set_page_config(
 )
 
 # Custom enterprise style sheets
-st.markdown("""
+# Custom enterprise style sheets
+style_css = """
     <style>
     .main-header { font-size: 2.3rem; font-weight: 800; color: #1E3A8A; margin-bottom: 5px; }
     .sub-header { font-size: 1.1rem; color: #4B5563; margin-bottom: 25px; }
@@ -45,7 +46,11 @@ st.markdown("""
     .match-high { color: #059669; font-weight: bold; }
     .match-med { color: #D97706; font-weight: bold; }
     </style>
-""", unsafe_allowed_with_html=True)
+"""
+
+# Pass variables directly to bypass Python 3.14 structural strictness
+st.markdown(style_css, unsafe_allowed_with_html=True)
+
 
 st.markdown('<div class="main-header">⚡ Real-Time AI Job & HR Tracker</div>', unsafe_allowed_with_html=True)
 st.markdown('<div class="sub-header">Automated Multi-Source Job Scraper, Vector Alignment Matcher, and Cold Outreach Matrix</div>', unsafe_allowed_with_html=True)
