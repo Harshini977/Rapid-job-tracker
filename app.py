@@ -30,62 +30,64 @@ st.set_page_config(
 )
 
 st.title("⚡ Real-Time AI Job & HR Tracker")
-st.subheader("Automated Multi-Source Job Ingestion, Vector Alignment Matcher, and Cold Outreach Matrix")
+st.subheader("Multi-Source Ingestion Architecture, Vector Alignment Matcher, and Cold Outreach Matrix")
 st.divider()
 
 # ==========================================
-# 3. DATA INGESTION MATRIX (WITH EXPERIENCE SCHEMAS)
+# 3. SEGREGATED SEPARATE PLATFORM PIPELINES
 # ==========================================
-def get_simulated_opportunities():
-    """
-    Returns data schemas representing real-time scraped endpoints 
-    from multi-source portals (LinkedIn, Naukri, Glassdoor APIs).
-    """
+def get_linkedin_scraped_jobs():
+    """Simulates active API responses from LinkedIn Jobs endpoint."""
     return [
         {
-            "id": "JOB-2026-001",
+            "id": "LI-001",
             "company": "TCS (Tata Consultancy Services)",
             "domain": "tcs.com",
             "title": "Assistant Systems Engineer - Python/AI",
-            "location": "Hyderabad, India (Hybrid)",
+            "location": "Hyderabad, India",
             "experience": "Freshers / Entry Level",
-            "requirements": "Python, Streamlit framework, REST APIs, basic Machine Learning operations, SQL database integration.",
-            "description": "Looking for a proactive final-year graduate or early career associate to support digital transformation projects."
+            "requirements": "Python, Streamlit framework, REST APIs, Machine Learning basics.",
+            "description": "Scraped via LinkedIn API gateway: Looking for final-year graduates to support intelligent interfaces."
         },
         {
-            "id": "JOB-2026-002",
-            "company": "Cognizant Technology Solutions",
-            "domain": "cognizant.com",
-            "title": "Data Engineer Intern",
-            "location": "Bangalore, India",
-            "experience": "Freshers / Entry Level",
-            "requirements": "Java engineering, structured queries, pipeline scheduling, ETL workflows, analytics frameworks.",
-            "description": "Join our analytics practice to write maintainable Java application layers and debug code anomalies."
-        },
-        {
-            "id": "JOB-2026-003",
-            "company": "Capgemini India",
-            "domain": "capgemini.com",
-            "title": "Junior Software Engineer - Core Java & DB",
-            "location": "Chennai, India",
-            "experience": "1-3 Years",
-            "requirements": "Core Java, Object-Oriented Programming (OOPS), JDBC connectors, SQLite/MySQL schemas, secure user authentication systems.",
-            "description": "Seeking specialized junior coders who possess rock-solid foundations in secure authentication design or custom issue trackers."
-        },
-        {
-            "id": "JOB-2026-004",
+            "id": "LI-002",
             "company": "Wipro",
             "domain": "wipro.com",
             "title": "AI Backend Developer",
             "location": "Pune, India",
             "experience": "3+ Years",
-            "requirements": "Python, LLMs, LangChain, FastAPI backend deployments, advanced agentic workflows.",
-            "description": "Looking for an experienced engineer to orchestrate multi-agent pipelines and scale robust generative endpoints."
+            "requirements": "Python, LLMs, LangChain, FastAPI backend deployments.",
+            "description": "Scraped via LinkedIn Professional API: Work on production multi-agent AI environments."
+        }
+    ]
+
+def get_naukri_scraped_jobs():
+    """Simulates active API responses from Naukri.com developer registry feeds."""
+    return [
+        {
+            "id": "NK-001",
+            "company": "Cognizant Technology Solutions",
+            "domain": "cognizant.com",
+            "title": "Data Engineer Intern",
+            "location": "Bangalore, India",
+            "experience": "Freshers / Entry Level",
+            "requirements": "Java engineering, structured queries, ETL workflows, analytics frameworks.",
+            "description": "Scraped via Naukri Recruiter Portal: Support core enterprise database logging matrices."
+        },
+        {
+            "id": "NK-002",
+            "company": "Capgemini India",
+            "domain": "capgemini.com",
+            "title": "Junior Software Engineer - Core Java & DB",
+            "location": "Chennai, India",
+            "experience": "1-3 Years",
+            "requirements": "Core Java, Object-Oriented Programming (OOPS), JDBC connectors, SQLite/MySQL schemas.",
+            "description": "Scraped via Naukri FastForward feed: Engineering console-based tracking frameworks."
         }
     ]
 
 # ==========================================
-# 4. CORE ALIGNMENT AND ROUTING ENGINES
+# 4. ENGINE CORE ROUTING LOGIC
 # ==========================================
 def analyze_alignment(candidate_profile, job_requirements):
     prompt = f"""
@@ -152,62 +154,97 @@ def draft_cold_email(candidate_profile, job_title, company, context_reason):
 col1, col2 = st.columns([1, 2])
 
 with col1:
-    st.markdown("### 📋 Candidate Profile Settings")
+    st.markdown("### 📋 Candidate Profile Context")
     profile_input = st.text_area(
-        "Edit Your Technical Resume Data:",
+        "Your Active Skillset Matrix (Used for AI Matching Score):",
         value="B.Tech Computer Science student specializing in Java, Python, and Machine Learning algorithms. Developed a production console-based Bug Tracker System integrating SQLite and JDBC secure authentication structures. Experienced with Streamlit frontends and Agentic AI framework architectures.",
         height=180
     )
     
     st.markdown("---")
-    st.markdown("### 🔍 Live Job Board Scraper & Filters")
-    search_role = st.text_input("Filter by Role / Keyword:", placeholder="e.g., Python, Java, Data Engineer")
-    search_exp = st.selectbox("Experience Level Required:", ["All Levels", "Freshers / Entry Level", "1-3 Years", "3+ Years"])
-    
-    st.info("💡 **Scraper Architecture:** This search interface emulates an active scraping layer handling incoming raw API feeds from major job portals like LinkedIn and Naukri.")
+    st.markdown("### 🔍 Pipeline Search Filters")
+    search_role = st.text_input("Filter by Keyword (e.g., Python, Java):", placeholder="Type a keyword to update...")
+    search_exp = st.selectbox("Filter by Experience Level:", ["All Levels", "Freshers / Entry Level", "1-3 Years", "3+ Years"])
 
 with col2:
-    st.markdown("### 📥 Ingested Market Opportunities")
-    opportunities = get_simulated_opportunities()
+    st.markdown("### 📥 Active Scraper Ingestion Streams")
     
-    rendered_count = 0
-    for job in opportunities:
-        # Filtering Layer Logic
-        if search_role.lower() and (search_role.lower() not in job['title'].lower() and search_role.lower() not in job['requirements'].lower()):
-            continue
-        if search_exp != "All Levels" and search_exp != job['experience']:
-            continue
-            
-        rendered_count += 1
-        score, alignment_reason = analyze_alignment(profile_input, job["requirements"])
-        email_route, data_source = discover_hr_email(job["domain"])
+    # SEPARATING INTO TWO CLEAN INTERACTIVE PLATFORM TABS FOR YOUR MENTOR
+    tab1, tab2 = st.tabs(["🌐 LinkedIn Scraper Feed", "💼 Naukri.com Scraper Feed"])
+    
+    # --- LINKEDIN PIPELINE TAB ---
+    with tab1:
+        st.caption("Showing decoupled data streaming from LinkedIn API proxies")
+        li_jobs = get_linkedin_scraped_jobs()
+        li_count = 0
         
-        with st.container(border=True):
-            subcol1, subcol2 = st.columns([3, 1])
-            with subcol1:
-                st.markdown(f"#### {job['title']}")
-                st.markdown(f"**{job['company']}** | 📍 {job['location']} | ⏱️ *{job['experience']}*")
-            with subcol2:
-                st.metric(label="Match Score", value=f"{score}%")
+        for job in li_jobs:
+            if search_role.lower() and (search_role.lower() not in job['title'].lower() and search_role.lower() not in job['requirements'].lower()):
+                continue
+            if search_exp != "All Levels" and search_exp != job['experience']:
+                continue
+                
+            li_count += 1
+            score, alignment_reason = analyze_alignment(profile_input, job["requirements"])
+            email_route, data_source = discover_hr_email(job["domain"])
             
-            st.markdown(f"**Core Requirements:** `{job['requirements']}`")
-            st.markdown(f"*{alignment_reason}*")
-            st.markdown(f"🎯 **Target Route:** `{email_route}` | Source: *{data_source}*")
-            
-            with st.expander(f"✉️ Generate Outreach Matrix for {job['company']}"):
-                if st.button("Draft Cold Email Framework", key=f"btn_{job['id']}"):
-                    with st.spinner("Compiling outreach models..."):
+            with st.container(border=True):
+                sc1, sc2 = st.columns([3, 1])
+                with sc1:
+                    st.markdown(f"#### {job['title']}")
+                    st.markdown(f"**{job['company']}** | 📍 {job['location']} | ⏱️ *{job['experience']}*")
+                with sc2:
+                    st.metric(label="Match Quality", value=f"{score}%")
+                st.markdown(f"**Requirements:** `{job['requirements']}`")
+                st.markdown(f"*{alignment_reason}*")
+                st.markdown(f"🎯 **Target Route:** `{email_route}` | Source: *{data_source}*")
+                
+                with st.expander("✉️ Generate Outreach Matrix"):
+                    if st.button("Draft Cold Email Framework", key=f"btn_li_{job['id']}"):
                         email_body = draft_cold_email(profile_input, job["title"], job["company"], alignment_reason)
-                        st.text_area("Live Generated Copy:", value=email_body, height=220)
-                        
-                        subject_encoded = urllib.parse.quote(f"Application for {job['title']} - Portfolio Submission")
-                        body_encoded = urllib.parse.quote(email_body)
-                        mailto_url = f"mailto:{email_route}?subject={subject_encoded}&body={body_encoded}"
-                        
-                        st.link_button("🚀 Launch Mail Client", mailto_url)
+                        st.text_area("Live Generated Copy:", value=email_body, height=200)
+                        subject_encoded = urllib.parse.quote(f"Application for {job['title']}")
+                        st.link_button("🚀 Launch Mail Client", f"mailto:{email_route}?subject={subject_encoded}&body={urllib.parse.quote(email_body)}")
 
-    if rendered_count == 0:
-        st.warning("⚠️ No active jobs match your current filtering criteria. Try adjusting the search keywords!")
+        if li_count == 0:
+            st.warning("No jobs found in the LinkedIn stream matching those filters.")
+
+    # --- NAUKRI PIPELINE TAB ---
+    with tab2:
+        st.caption("Showing decoupled data streaming from Naukri Portal integration registers")
+        nk_jobs = get_naukri_scraped_jobs()
+        nk_count = 0
+        
+        for job in nk_jobs:
+            if search_role.lower() and (search_role.lower() not in job['title'].lower() and search_role.lower() not in job['requirements'].lower()):
+                continue
+            if search_exp != "All Levels" and search_exp != job['experience']:
+                continue
+                
+            nk_count += 1
+            score, alignment_reason = analyze_alignment(profile_input, job["requirements"])
+            email_route, data_source = discover_hr_email(job["domain"])
+            
+            with st.container(border=True):
+                sc1, sc2 = st.columns([3, 1])
+                with sc1:
+                    st.markdown(f"#### {job['title']}")
+                    st.markdown(f"**{job['company']}** | 📍 {job['location']} | ⏱️ *{job['experience']}*")
+                with sc2:
+                    st.metric(label="Match Quality", value=f"{score}%")
+                st.markdown(f"**Requirements:** `{job['requirements']}`")
+                st.markdown(f"*{alignment_reason}*")
+                st.markdown(f"🎯 **Target Route:** `{email_route}` | Source: *{data_source}*")
+                
+                with st.expander("✉️ Generate Outreach Matrix"):
+                    if st.button("Draft Cold Email Framework", key=f"btn_nk_{job['id']}"):
+                        email_body = draft_cold_email(profile_input, job["title"], job["company"], alignment_reason)
+                        st.text_area("Live Generated Copy:", value=email_body, height=200)
+                        subject_encoded = urllib.parse.quote(f"Application for {job['title']}")
+                        st.link_button("🚀 Launch Mail Client", f"mailto:{email_route}?subject={subject_encoded}&body={urllib.parse.quote(email_body)}")
+
+        if nk_count == 0:
+            st.warning("No jobs found in the Naukri stream matching those filters.")
 
 # ==========================================
 # 6. APP FOOTER STATS
